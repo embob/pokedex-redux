@@ -49,7 +49,7 @@ export const fetchPokemonList = createAsyncThunk(
 				return {
 					id: details.id,
 					name: details.name,
-					image: details.sprites.other.home.front_default,
+					image: details.sprites.other["official-artwork"].front_default,
 					types: details.types.map(
 						(t: { type: { name: string } }) => t.type.name,
 					),
