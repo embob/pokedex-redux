@@ -5,6 +5,7 @@ import {
 } from "@reduxjs/toolkit";
 import {
 	calculateDamageRelations,
+	fetchDamageRelationsForTypes,
 	type DamageRelations,
 } from "../../shared/utils/pokemonUtils";
 
@@ -47,11 +48,6 @@ interface EvolvesFrom {
 	image: string;
 }
 
-// interface DamageRelationBucket {
-// 	noDamageFrom: { name: string; url: string }[];
-// 	halfDamageFrom: { name: string; url: string }[];
-// 	doubleDamageFrom: { name: string; url: string }[];
-// }
 interface PokemonDetail {
 	id: number;
 	name: string;
@@ -141,31 +137,10 @@ export const fetchPokemonDetail = createAsyncThunk(
 				}
 			: null;
 
-		// to get damage relations we need to get all the types
-		// for each type we then get the damage relation names - no_damage_from, half_damage_from, double_damage_from
-		// merge all the damage relations into one object and return the object
-
-		const damageRelationsPerType: DamageRelations[] = await Promise.all(
-			types.map(async (type: string) => {
-				const typeResponse = await fetch(
-					`https://pokeapi.co/api/v2/type/${type}`,
-				);
-				const { damage_relations } = await typeResponse.json();
-
-				const extractNames = (types: { name: string; url: string }[]) => {
-					return types.map((type) => type.name);
-				};
-
-				return {
-					noDamageFrom: extractNames(damage_relations.no_damage_from),
-					halfDamageFrom: extractNames(damage_relations.half_damage_from),
-					doubleDamageFrom: extractNames(damage_relations.double_damage_from),
-				};
-			}),
+		const damageRelationsPerType = await fetchDamageRelationsForTypes(types);
+		const damageRelationMultipliers = calculateDamageRelations(
+			damageRelationsPerType,
 		);
-
-		const damageRelations = calculateDamageRelations(damageRelationsPerType);
-		console.log("🚀 , damageRelations:", damageRelations);
 
 		return {
 			id: data.id,
@@ -178,7 +153,7 @@ export const fetchPokemonDetail = createAsyncThunk(
 			hp,
 			description,
 			evolvesFrom,
-			damageRelations,
+			damageRelationMultipliers,
 		} as PokemonDetail;
 	},
 );
