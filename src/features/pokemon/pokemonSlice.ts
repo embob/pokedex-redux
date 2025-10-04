@@ -6,8 +6,10 @@ import {
 import {
 	calculateDamageRelations,
 	fetchDamageRelationsForTypes,
-	type DamageRelations,
+	getRandomItems,
 } from "../../shared/utils/pokemonUtils";
+
+const moveCache = new Map<string, Move>();
 
 interface Pokemon {
 	id: number;
@@ -46,9 +48,16 @@ const initialState: PokemonState = {
 interface EvolvesFrom {
 	name: string;
 	image: string;
+	stage: number;
 }
 
-interface PokemonDetail {
+export interface Move {
+	name: string;
+	description: string;
+	type: string;
+}
+
+export interface PokemonDetail {
 	id: number;
 	name: string;
 	image: string;
@@ -59,8 +68,12 @@ interface PokemonDetail {
 	description: string;
 	genus: string;
 	evolvesFrom: EvolvesFrom;
-	moves?: string[];
-	damageRelations?: DamageRelations;
+	moves?: Move[];
+	damageRelationMultipliers?: {
+		weakTo: string[];
+		resistantTo: string[];
+		immuneTo: string[];
+	};
 }
 
 // Thunks
@@ -134,6 +147,31 @@ export const fetchPokemonDetail = createAsyncThunk(
 						return evolvesFromPokemonData.sprites.other["official-artwork"]
 							.front_default;
 					})(),
+					stage: await (async () => {
+						// Fetch the evolution chain
+						const chainResponse = await fetch(speciesData.evolution_chain.url);
+						const chainData = await chainResponse.json();
+
+						// Traverse the chain to count the stage
+						let stage = 1;
+						let current = chainData.chain;
+
+						while (current) {
+							if (
+								current.species.name === speciesData.evolves_from_species.name
+							) {
+								return stage;
+							}
+							// Move to next evolution
+							if (current.evolves_to.length > 0) {
+								current = current.evolves_to[0];
+								stage++;
+							} else {
+								break;
+							}
+						}
+						return stage;
+					})(),
 				}
 			: null;
 
@@ -141,6 +179,58 @@ export const fetchPokemonDetail = createAsyncThunk(
 		const damageRelationMultipliers = calculateDamageRelations(
 			damageRelationsPerType,
 		);
+
+		const randomMoveNames: { move: { name: string; url: string } }[] =
+			getRandomItems(data.moves, 20);
+		console.log("🚀 , randomMoveNames:", randomMoveNames);
+		// Fetch moves data
+		const moves: Move[] = await Promise.all(
+			randomMoveNames.map(
+				async (moveEntry: { move: { name: string; url: string } }) => {
+					try {
+						const moveName = moveEntry.move.name;
+
+						// Check cache first
+						if (moveCache.has(moveName)) {
+							console.log(`✅ Cache hit for move: ${moveName}`);
+							const cachedMove = moveCache.get(moveName);
+							if (cachedMove) {
+								return cachedMove;
+							}
+						}
+
+						// not in cache - fetch from API
+						console.log(`🌐 Fetching move from API: ${moveName}`);
+						const moveResponse = await fetch(moveEntry.move.url);
+						const moveData = await moveResponse.json();
+
+						// Get the flavor text for black-white version in English
+						const flavorTextEntry = moveData.flavor_text_entries.find(
+							(entry: {
+								version_group: { name: string };
+								language: { name: string };
+							}) =>
+								entry.version_group.name === "black-white" &&
+								entry.language.name === "en",
+						);
+
+						const move: Move = {
+							name: moveData.name,
+							description: flavorTextEntry
+								? flavorTextEntry.flavor_text.replace(/\n/g, " ")
+								: "",
+							type: moveData.type.name,
+						};
+
+						moveCache.set(moveName, move);
+						return move;
+					} catch (error) {
+						console.error(`Failed to fetch move data:`, error);
+						return null;
+					}
+				},
+			),
+		).then((moves) => moves.filter((move): move is Move => move !== null));
 
 		return {
 			id: data.id,
@@ -154,6 +244,7 @@ export const fetchPokemonDetail = createAsyncThunk(
 			description,
 			evolvesFrom,
 			damageRelationMultipliers,
+			moves,
 		} as PokemonDetail;
 	},
 );
@@ -161,7 +252,15 @@ export const fetchPokemonDetail = createAsyncThunk(
 const pokemonSlice = createSlice({
 	name: "pokemon",
 	initialState,
-	reducers: {},
+	// handle simple immediate state changes - synchronous actions
+	reducers: {
+		clearSelectedPokemon: (state) => {
+			state.selectedPokemon = null;
+			state.selectedStatus = "idle";
+			state.selectedError = null;
+		},
+	},
+	// handle async actions (api calls outside of the reducer that take time)
 	extraReducers: (builder) => {
 		builder.addCase(fetchPokemonList.pending, (state) => {
 			state.status = "loading";
@@ -197,4 +296,28 @@ const pokemonSlice = createSlice({
 	},
 });
 
+// Export the action so components can dispatch it
+export const { clearSelectedPokemon } = pokemonSlice.actions;
 export default pokemonSlice.reducer;
+
+/**
+ *
+ * // 1. You export the ACTION CREATOR
+export const { clearSelectedPokemon } = pokemonSlice.actions;
+
+// 2. Component calls the ACTION CREATOR
+dispatch(clearSelectedPokemon());
+
+// 3. This CREATES an ACTION OBJECT
+{
+	type: "pokemon/clearSelectedPokemon"
+}
+
+// 4. Redux sends this action to the REDUCER
+// The reducer function you wrote runs:
+clearSelectedPokemon: (state) => {
+	state.selectedPokemon = null;
+}
+
+// 5. State is updated!
+ */

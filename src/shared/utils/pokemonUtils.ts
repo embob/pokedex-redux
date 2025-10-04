@@ -1,3 +1,35 @@
+export const capitaliseWord = (word: string): string => {
+	return word.charAt(0).toUpperCase() + word.slice(1);
+};
+
+export const capitaliseWords = (sentence: string): string => {
+	return sentence
+		.split(/[-\s]+/)
+		.map(capitaliseWord)
+		.join(" ");
+};
+
+export const normalizeDescription = (description: string): string => {
+	return (
+		description
+			// Replace POKéMON (in any case variation) with proper Pokémon
+			.replace(/POK[ÉEée]MON/gi, "Pokémon")
+			// Convert all-caps words (likely Pokemon names) to title case
+			// Matches words that are 3+ characters and all uppercase
+			.replace(
+				/\b[A-Z]{3,}\b/g,
+				(match) => match.charAt(0).toUpperCase() + match.slice(1).toLowerCase(),
+			)
+	);
+};
+
+export const getRandomItems = <T>(array: T[], count: number): T[] => {
+	if (!array || array.length === 0) return [];
+	if (array.length <= count) return [...array];
+
+	const shuffled = [...array].sort(() => Math.random() - 0.5);
+	return shuffled.slice(0, count);
+};
 export interface DamageRelations {
 	noDamageFrom: string[];
 	halfDamageFrom: string[];
