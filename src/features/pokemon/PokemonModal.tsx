@@ -1,9 +1,8 @@
-/** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
-/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../app/store";
 import { clearSelectedPokemon, type PokemonDetail } from "./pokemonSlice";
 import { PokemonCard, PokemonCardLoading } from "./PokemonCard";
+import { useEffect, useRef } from "react";
 
 interface PokemonModalProps {
 	pokemon: PokemonDetail | null;
@@ -12,22 +11,53 @@ interface PokemonModalProps {
 export const PokemonModal = ({ pokemon }: PokemonModalProps) => {
 	const dispatch = useDispatch<AppDispatch>();
 
-	const handleClose = () => {
-		dispatch(clearSelectedPokemon());
-	};
+	// add a ref to access the DOM element
+	const dialogRef = useRef<HTMLDialogElement>(null);
+
+	useEffect(() => {
+		const dialog = dialogRef.current;
+		if (!dialog) return;
+
+		const handleClose = () => {
+			dispatch(clearSelectedPokemon());
+		};
+
+		dialog.showModal();
+		document.body.style.overflow = "hidden";
+
+		const handleCancel = (e: Event) => {
+			e.preventDefault();
+			handleClose();
+		};
+
+		const handleClick = (e: MouseEvent) => {
+			if (e.target === dialog) {
+				handleClose();
+			}
+		};
+
+		dialog.addEventListener("click", handleClick);
+		dialog.addEventListener("cancel", handleCancel);
+
+		return () => {
+			dialog.removeEventListener("click", handleClick);
+			dialog.removeEventListener("cancel", handleCancel);
+			// Close dialog and restore scroll on unmount
+			dialog.close();
+			document.body.style.overflow = "auto";
+		};
+	}, [dispatch]);
 
 	return (
-		<div
-			className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4"
-			onClick={handleClose}
+		<dialog
+			ref={dialogRef}
+			className="backdrop:bg-black/70 backdrop:animate-in backdrop:fade-in-0 bg-transparent p-0 max-w-none max-h-none border-0 overflow-visible fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-in fade-in-0 zoom-in-95 duration-200"
 		>
-			{/* Wrapper with relative positioning - same for both states */}
-			<div className="relative" onClick={(e) => e.stopPropagation()}>
-				{/* Close button - always positioned the same way */}
+			<div className="relative p-4">
 				<button
 					type="button"
-					onClick={handleClose}
-					className="absolute -top-10 -right-10 text-white hover:text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center transition-all z-10 cursor-pointer"
+					onClick={() => dispatch(clearSelectedPokemon())}
+					className="absolute top-7 right-7 text-white hover:text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center transition-all z-10 cursor-pointer"
 					aria-label="Close modal"
 				>
 					✕
@@ -35,6 +65,6 @@ export const PokemonModal = ({ pokemon }: PokemonModalProps) => {
 
 				{!pokemon ? <PokemonCardLoading /> : <PokemonCard pokemon={pokemon} />}
 			</div>
-		</div>
+		</dialog>
 	);
 };

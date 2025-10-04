@@ -61,14 +61,14 @@ export const PokemonList = () => {
 	return (
 		<>
 			<section className="container mx-auto w-4/5">
-				<div className="grid grid-cols-[repeat(auto-fill,240px)] justify-center gap-10">
+				<div className="grid grid-cols-[repeat(auto-fill,290px)] justify-center gap-10">
 					{list.map((pokemon) => {
 						return (
 							<button
 								type="button"
 								tabIndex={0}
 								key={pokemon.name}
-								className="h-[240px] rounded-lg pt-[20px] flex flex-col cursor-pointer group transition-all duration-150 ease-in-out active:scale-95 active:shadow-inner relative overflow-hidden"
+								className="h-[290px] rounded-lg pt-[20px] flex flex-col cursor-pointer group transition-all duration-150 ease-in-out active:scale-95 active:shadow-inner relative overflow-hidden"
 								style={getCardBackground(pokemon.types)}
 								onClick={() => handlePokemonClick(pokemon.name)}
 							>
