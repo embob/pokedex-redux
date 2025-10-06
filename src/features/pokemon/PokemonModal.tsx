@@ -57,7 +57,7 @@ export const PokemonModal = ({ pokemon }: PokemonModalProps) => {
 				<button
 					type="button"
 					onClick={() => dispatch(clearSelectedPokemon())}
-					className="absolute top-7 right-7 text-white hover:text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center transition-all z-10 cursor-pointer"
+					className="absolute -top-8 -right-8 text-white hover:text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center transition-all z-50 cursor-pointer"
 					aria-label="Close modal"
 				>
 					✕

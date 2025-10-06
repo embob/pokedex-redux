@@ -85,7 +85,7 @@ export const PokemonList = () => {
 									<span className="flex items-center gap-1 text-md">
 										<Pokeball size={16} /> {formatPokemonId(pokemon.id)}
 									</span>
-									<h3 className="text-lg font-semibold">
+									<h3 className="text-lg font-bold">
 										{capitaliseWord(pokemon.name)}
 									</h3>
 								</div>
