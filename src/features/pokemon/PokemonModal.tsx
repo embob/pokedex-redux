@@ -1,8 +1,9 @@
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../app/store";
-import { clearSelectedPokemon, type PokemonDetail } from "./pokemonSlice";
+import { clearSelectedPokemon } from "./pokemonSlice";
 import { PokemonCard, PokemonCardLoading } from "./PokemonCard";
 import { useEffect, useRef } from "react";
+import type { PokemonDetail } from "./pokemonTypes";
 
 interface PokemonModalProps {
 	pokemon: PokemonDetail | null;
