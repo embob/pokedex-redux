@@ -176,7 +176,7 @@ export const fetchMoves = async (
 };
 
 export const fetchPokemonList = async (): Promise<PokemonListItem[]> => {
-	const response = await fetch(`${BASE_URL}/pokemon?limit151`);
+	const response = await fetch(`${BASE_URL}/pokemon?limit=151`);
 	if (!response.ok) throw new Error("Failed to fetch Pokemon list");
 	const data = await response.json();
 
