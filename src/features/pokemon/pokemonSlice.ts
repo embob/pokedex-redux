@@ -53,6 +53,92 @@ export const fetchPokemonDetail = createAsyncThunk(
 	},
 );
 
+export const navigateToNextPokemon = createAsyncThunk(
+	"pokemon/navigateToNextPokemon",
+	async (_, { getState }) => {
+		// getState() gives us access to the current Redux state
+		const state = getState() as { pokemon: PokemonState };
+		const { selectedPokemon, list } = state.pokemon;
+
+		// Safety checks
+		if (!selectedPokemon || list.length === 0) {
+			throw new Error("No Pokemon selected or list is empty");
+		}
+
+		// Find current Pokemon's position in the list
+		const currentIndex = list.findIndex(
+			(pokemon) => pokemon.name === selectedPokemon.name,
+		);
+
+		// Check if we can go to next Pokemon
+		if (currentIndex === -1 || currentIndex >= list.length - 1) {
+			throw new Error("No next Pokemon available");
+		}
+
+		// Get the next Pokemon from the list
+		const nextPokemon = list[currentIndex + 1];
+
+		// Fetch full details for the next Pokemon (same as fetchPokemonDetail)
+		const pokemonData = await pokemonApi.fetchPokemonDetailData(
+			nextPokemon.name,
+		);
+		const damageRelationsPerType = await fetchDamageRelationsForTypes(
+			pokemonData.types,
+		);
+		const damageRelationMultipliers = calculateDamageRelations(
+			damageRelationsPerType,
+		);
+
+		return {
+			...pokemonData,
+			damageRelationMultipliers,
+		} as PokemonDetail;
+	},
+);
+
+export const navigateToPreviousPokemon = createAsyncThunk(
+	"pokemon/navigateToPreviousPokemon",
+	async (_, { getState }) => {
+		// getState() gives us access to the current Redux state
+		const state = getState() as { pokemon: PokemonState };
+		const { selectedPokemon, list } = state.pokemon;
+
+		// Safety checks
+		if (!selectedPokemon || list.length === 0) {
+			throw new Error("No Pokemon selected or list is empty");
+		}
+
+		// Find current Pokemon's position in the list
+		const currentIndex = list.findIndex(
+			(pokemon) => pokemon.name === selectedPokemon.name,
+		);
+
+		// Check if we can go to previous Pokemon
+		if (currentIndex <= 0) {
+			throw new Error("No previous Pokemon available");
+		}
+
+		// Get the previous Pokemon from the list
+		const previousPokemon = list[currentIndex - 1];
+
+		// Fetch full details for the next Pokemon (same as fetchPokemonDetail)
+		const pokemonData = await pokemonApi.fetchPokemonDetailData(
+			previousPokemon.name,
+		);
+		const damageRelationsPerType = await fetchDamageRelationsForTypes(
+			pokemonData.types,
+		);
+		const damageRelationMultipliers = calculateDamageRelations(
+			damageRelationsPerType,
+		);
+
+		return {
+			...pokemonData,
+			damageRelationMultipliers,
+		} as PokemonDetail;
+	},
+);
+
 const pokemonSlice = createSlice({
 	name: "pokemon",
 	initialState,
@@ -96,6 +182,38 @@ const pokemonSlice = createSlice({
 			state.selectedStatus = "failed";
 			state.selectedError =
 				action.error.message ?? "Failed to load Pokemon details";
+		});
+		builder.addCase(navigateToNextPokemon.pending, (state) => {
+			state.selectedStatus = "loading";
+			state.selectedError = null;
+		});
+		builder.addCase(
+			navigateToNextPokemon.fulfilled,
+			(state, action: PayloadAction<PokemonDetail>) => {
+				state.selectedStatus = "succeeded";
+				state.selectedPokemon = action.payload;
+			},
+		);
+		builder.addCase(navigateToNextPokemon.rejected, (state, action) => {
+			state.selectedStatus = "failed";
+			state.selectedError =
+				action.error.message ?? "Failed to navigate to next Pokemon";
+		});
+		builder.addCase(navigateToPreviousPokemon.pending, (state) => {
+			state.selectedStatus = "loading";
+			state.selectedError = null;
+		});
+		builder.addCase(
+			navigateToPreviousPokemon.fulfilled,
+			(state, action: PayloadAction<PokemonDetail>) => {
+				state.selectedStatus = "succeeded";
+				state.selectedPokemon = action.payload;
+			},
+		);
+		builder.addCase(navigateToPreviousPokemon.rejected, (state, action) => {
+			state.selectedStatus = "failed";
+			state.selectedError =
+				action.error.message ?? "Failed to navigate to previous Pokemon";
 		});
 	},
 });
