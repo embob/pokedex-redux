@@ -1,3 +1,65 @@
+export const getBackgroundType = (types: string[], name: string): string => {
+	// fallback to normal
+	if (!types || types.length === 0) return "normal";
+
+	if (
+		name === "dratini" ||
+		name === "dragonair" ||
+		name === "kabuto" ||
+		name === "omanyte" ||
+		name === "omastar" ||
+		name === "cloyster"
+	)
+		return "water";
+
+	if (
+		name === "slowpoke" ||
+		name === "slowbro" ||
+		name === "lapras" ||
+		name === "psyduck" ||
+		name === "golduck" ||
+		name === "blastoise"
+	)
+		return "waterSand";
+
+	if (name === "machop" || name === "machoke" || name === "machamp") {
+		return "rock";
+	}
+
+	if (name === "dragonite" || name === "tauros" || name === "kangaskhan") {
+		return "ground";
+	}
+
+	if (name === "moltres" || name === "aerodactyl" || name === "fearow") {
+		return "flying";
+	}
+
+	if (name === "hitmonlee" || name === "hitmonchan") {
+		return "city";
+	}
+
+	if (name === "primeape" || name === "mankey") {
+		return "forest";
+	}
+
+	if (types.length === 1) return types[0];
+	const typeCombination = `${types[0]}-${types[1]}`;
+
+	const dualTypeRules: Record<string, string> = {
+		"poison-ground": "ground",
+		"normal-fairy": "fairy",
+		"water-ice": "ice",
+		"electric-steel": "steel",
+		"grass-poison": "poison",
+	};
+
+	if (dualTypeRules[typeCombination]) {
+		return dualTypeRules[typeCombination];
+	}
+
+	return types[0];
+};
+
 export const capitaliseWord = (word: string): string => {
 	return word.charAt(0).toUpperCase() + word.slice(1);
 };
@@ -117,7 +179,7 @@ export const calculateDamageMultipliers = (
 	}
 
 	weakTo.sort((a, b) => b.multiplier - a.multiplier); // 4× before 2×
-	resistantTo.sort((a, b) => b.multiplier - a.multiplier); // 0.5× before 0.25×
+	resistantTo.sort((a, b) => a.multiplier - b.multiplier); // most resistant first 0.25× before 0.5×
 
 	return {
 		weakTo,

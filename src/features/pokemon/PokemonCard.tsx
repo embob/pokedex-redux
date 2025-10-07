@@ -1,12 +1,13 @@
 import { useMemo } from "react";
-import type { PokemonDetail } from "./pokemonSlice";
 import { backgroundImages, colors, typeIcons } from "./pokemonConstants";
 import {
 	capitaliseWord,
 	capitaliseWords,
+	getBackgroundType,
 	getRandomItems,
 	normalizeDescription,
 } from "../../shared/utils/pokemonUtils";
+import type { PokemonDetail } from "./pokemonTypes";
 
 const CARD_SIZE = "w-[550px] h-[765px]";
 
@@ -46,9 +47,10 @@ interface PokemonCardProps {
 }
 
 export const PokemonCard = ({ pokemon }: PokemonCardProps) => {
+	const backgroundType = getBackgroundType(pokemon.types, pokemon.name);
 	const backgroundColor = colors[pokemon.types[0] as keyof typeof colors];
 	const backgroundImage =
-		backgroundImages[pokemon.types[0] as keyof typeof backgroundImages];
+		backgroundImages[backgroundType as keyof typeof backgroundImages];
 	const TypeIcon = typeIcons[pokemon.types[0] as keyof typeof typeIcons];
 
 	const formatHeight = (height: number): string =>
@@ -62,21 +64,28 @@ export const PokemonCard = ({ pokemon }: PokemonCardProps) => {
 		return getRandomItems(pokemon.moves || [], 2);
 	}, [pokemon.moves]);
 
+	const damageTypeTotal =
+		(pokemon.damageRelationMultipliers?.weakTo?.length ?? 0) +
+		(pokemon.damageRelationMultipliers?.resistantTo?.length ?? 0) +
+		(pokemon.damageRelationMultipliers?.immuneTo?.length ?? 0);
+
 	const renderDamageRelation = (types: string[] | undefined, label: string) => {
 		if (!types || types.length === 0) return null;
 
 		return (
 			<div className="flex flex-col items-center gap-[1px]">
-				<p className={`${FONT_FAMILY} text-[16px] font-bold leading-[1.2]`}>
+				<p className={`${FONT_FAMILY} text-[15px] font-bold leading-[1.3]`}>
 					{label}
 				</p>
-				<div className="flex items-center gap-[3px] justify-center">
+				<div
+					className={`flex items-center gap-[2px] justify-center flex-wrap max-w-[250px]`}
+				>
 					{types.map((type) => {
 						const TypeIcon = typeIcons[type as keyof typeof typeIcons];
 						return (
 							<TypeIconWithOverlay
 								Icon={TypeIcon}
-								className="w-8 h-8"
+								className={`${damageTypeTotal > 10 ? "w-7 h-7" : "w-8 h-8"}`}
 								key={type}
 							/>
 						);
@@ -174,12 +183,15 @@ export const PokemonCard = ({ pokemon }: PokemonCardProps) => {
 									? `url(${backgroundImage})`
 									: "none",
 								backgroundColor,
+								backgroundSize: "cover",
+								backgroundPosition: "center",
+								backgroundRepeat: "no-repeat",
 							}}
 						>
 							<img
 								src={pokemon.image}
 								alt={pokemon.name}
-								className={`${pokemon.height > 100 ? "max-h-[95%] max-w-[95%]" : "max-h-[75%] max-w-[75%]"} object-contain`}
+								className={`${pokemon.height > 70 ? "max-h-[95%] max-w-[95%]" : "max-h-[75%] max-w-[75%]"} object-contain`}
 							/>
 						</div>
 					</div>

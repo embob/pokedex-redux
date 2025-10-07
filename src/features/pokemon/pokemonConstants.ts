@@ -16,11 +16,24 @@ import PsychicIcon from "../../assets/icons/types/psychic.svg?react";
 import RockIcon from "../../assets/icons/types/rock.svg?react";
 import SteelIcon from "../../assets/icons/types/steel.svg?react";
 import WaterIcon from "../../assets/icons/types/water.svg?react";
-import fireBg from "../../assets/img/bg/fire.jpg";
-import ghostBg from "../../assets/img/bg/ghost.jpg";
-import grassBg from "../../assets/img/bg/grass.jpg";
-import poisonBg from "../../assets/img/bg/poison.jpg";
-import waterBg from "../../assets/img/bg/water.jpg";
+import fireBg from "../../assets/img/bg/fire.png";
+import ghostBg from "../../assets/img/bg/ghost.png";
+import grassBg from "../../assets/img/bg/grass.png";
+import poisonBg from "../../assets/img/bg/poison.png";
+import waterBg from "../../assets/img/bg/water.png";
+import darkBg from "../../assets/img/bg/dark.png";
+import fairyBg from "../../assets/img/bg/fairy.png";
+import rockBg from "../../assets/img/bg/rock.png";
+import groundBg from "../../assets/img/bg/ground.png";
+import iceBg from "../../assets/img/bg/ice.png";
+import bugBg from "../../assets/img/bg/bug.png";
+import steelBg from "../../assets/img/bg/steel.png";
+import psychicBg from "../../assets/img/bg/psychic.png";
+import electricBg from "../../assets/img/bg/electric.png";
+import waterSandBg from "../../assets/img/bg/water-sand.png";
+import flyingBg from "../../assets/img/bg/flying.png";
+import cityBg from "../../assets/img/bg/city.png";
+import forestBg from "../../assets/img/bg/forest.png";
 
 export const colors = {
 	bug: "#CAE48D",
@@ -70,4 +83,18 @@ export const backgroundImages = {
 	grass: grassBg,
 	poison: poisonBg,
 	water: waterBg,
+	dark: darkBg,
+	fairy: fairyBg,
+	rock: rockBg,
+	ground: groundBg,
+	ice: iceBg,
+	bug: bugBg,
+	steel: steelBg,
+	normal: grassBg,
+	psychic: psychicBg,
+	electric: electricBg,
+	waterSand: waterSandBg,
+	flying: flyingBg,
+	city: cityBg,
+	forest: forestBg,
 };
